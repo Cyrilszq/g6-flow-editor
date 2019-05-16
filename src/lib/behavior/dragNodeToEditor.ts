@@ -8,17 +8,16 @@ G6.registerBehavior('drag-node-to-editor', {
       'canvas:mouseenter': 'onMouseenter',
       'canvas:mousemove': 'onMousemove',
       'canvas:mouseup': 'stopAdd',
-      'canvas:mouseleave': 'stopAdd',
+      'canvas:mouseleave': 'cancelAdd',
     };
   },
   onMouseenter(ev) {
-    let shape = this.graph.get('delegateShape')
     const node = this.graph.get('addNode')
     const { x, y } = ev
-    if (!shape && node) {
+    if (!this.delegateShape && node) {
       const { width, height } = node
-      const parent = this.graph.get('group');
-      shape = parent.addShape('rect', {
+      const parent = this.graph.get('group')
+      this.delegateShape = parent.addShape('rect', {
         attrs: {
           width,
           height,
@@ -30,16 +29,14 @@ G6.registerBehavior('drag-node-to-editor', {
           strokeOpacity: 0.9,
           lineDash: [ 5, 5 ]
         },
-      });
-      shape.set('capture', false);
-      this.graph.set('delegateShape', shape);
+      })
+      this.delegateShape.set('capture', false)
     }
   },
   stopAdd(ev) {
     const { x, y } = ev
-    const shape = this.graph.get('delegateShape');
     const node = this.graph.get('addNode')
-    if (shape && node) {
+    if (this.delegateShape && node) {
       this.graph.add('node', {
         id: uuid(),
         isAnchorShow: true,
@@ -47,21 +44,39 @@ G6.registerBehavior('drag-node-to-editor', {
         y,
         size: [node.width, node.height],
         ...node,
-        anchorPoints: [[0.5, 1], [ 0.5, 0]]
+        style: {
+          stroke: '#CED4D9',
+          shadowOffsetX: 0,
+          shadowOffsetY: 4,
+          shadowBlur: 10,
+          shadowColor: 'rgba(13, 26, 38, 0.08)',
+          lineWidth: 1,
+          radius: 4,
+          fillOpacity: 0.92
+        },
+        anchorPoints: [[0.5, 1], [ 0.5, 0], [0, 0.5], [1, 0.5]]
       });
-      shape.remove()
-      this.graph.set('delegateShape', undefined);
+      this.delegateShape.remove()
+      this.delegateShape = undefined
       this.graph.set('addNode', undefined)
-      this.graph.paint();
+      this.graph.paint()
+    }
+  },
+  cancelAdd() {
+    const node = this.graph.get('addNode')
+    if (this.delegateShape && node) {
+      this.delegateShape.remove()
+      this.delegateShape = undefined
+      this.graph.set('addNode', undefined)
+      this.graph.paint()
     }
   },
   onMousemove(ev) {
     const { x, y } = ev
     const node = this.graph.get('addNode')
-    let shape = this.graph.get('delegateShape');
-    if (shape && node) {
+    if (this.delegateShape && node) {
       const { width, height } = node
-      shape.attr({ x: x - width / 2, y: y - height / 2 });
+      this.delegateShape.attr({ x: x - width / 2, y: y - height / 2 });
       this.graph.paint();
     }
   },

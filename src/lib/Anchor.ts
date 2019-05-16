@@ -2,7 +2,7 @@
  * @Description: 
  * @Author: zhaoqing
  * @Date: 2019-05-16 19:16:49
- * @LastEditTime: 2019-05-16 22:22:05
+ * @LastEditTime: 2019-05-17 00:03:23
  */
 import { getGraph } from "./Editor";
 
@@ -17,6 +17,16 @@ class Anchor {
     needRemoveShape.forEach(shape => shape.remove())
     this.anchors = this.anchors.filter(anchor => anchor.get('id') !== model.id)
     this.drawAnchor(model)
+  }
+
+  clearAnchor(model) {
+    const { id } = model
+    const graph = getGraph()
+    this.anchors
+      .filter(anchor => anchor.get('id') === id)
+      .forEach(shape => shape.remove())
+    graph.paint()
+    this.anchors = this.anchors.filter(anchor => anchor.get('id') !== id)
   }
 
   drawAnchor(model){

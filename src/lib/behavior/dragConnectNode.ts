@@ -36,7 +36,12 @@ G6.registerBehavior('drag-connect-node', {
       this.addingEdge = false
     } else {
       this.edge = this.graph.addItem('edge', {
-        shape: 'line',
+        shape: 'flow-cubic-vertical',
+        style: {
+          stroke: '#1890FF',
+          lineDash: [ 4, 4 ],
+          lineWidth: 1
+        },
         source: id,
         sourceAnchor: ev.target.get('index'),
         target: { x: ev.target.get('x'), y: ev.target.get('y') },
@@ -60,6 +65,14 @@ G6.registerBehavior('drag-connect-node', {
     if (this.addingEdge && this.edge) {
       if (this.targetId) {
         this.graph.updateItem(this.edge, {
+          style: {
+            lineDash: [],
+            stroke: '#A3B1BF',
+            strokeOpacity: 0.92,
+            lineWidth: 1,
+            lineAppendWidth: 8,
+            endArrow: true
+          },
           target: this.targetId,
           targetAnchor: ev.target.get('index'),
         });
