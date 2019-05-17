@@ -1,14 +1,23 @@
 import G6 from '@antv/g6'
 import uuid from 'uuid'
+import Anchor from '../Anchor';
 
-// 定义拖动节点到画布
+const anchor = new Anchor()
+
+// 定义拖动节点到画布，包含锚点行为
 G6.registerBehavior('drag-node-to-editor', {
   getEvents() {
     return {
+      // 移入 canvas，创建一个代理矩形
       'canvas:mouseenter': 'onMouseenter',
+      // 更新代理矩形位置
       'canvas:mousemove': 'onMousemove',
-      'canvas:mouseup': 'stopAdd',
-      'canvas:mouseleave': 'cancelAdd',
+      // 移除代理矩形，新增配置节点
+      'canvas:mouseup': 'onMouseup',
+      // 移除canvas，移除代理矩形
+      'canvas:mouseleave': 'onMouseleave',
+      'afteritemupdate': 'onUpdateAnchor',
+      'beforeremoveitem': 'onClearAnchor',
     };
   },
   onMouseenter(ev) {
@@ -33,13 +42,13 @@ G6.registerBehavior('drag-node-to-editor', {
       this.delegateShape.set('capture', false)
     }
   },
-  stopAdd(ev) {
+  onMouseup(ev) {
     const { x, y } = ev
     const node = this.graph.get('addNode')
     if (this.delegateShape && node) {
-      this.graph.add('node', {
+      const model = {
         id: uuid(),
-        isAnchorShow: true,
+        isShowAnchor: true,
         x,
         y,
         size: [node.width, node.height],
@@ -55,14 +64,16 @@ G6.registerBehavior('drag-node-to-editor', {
           fillOpacity: 0.92
         },
         anchorPoints: [[0.5, 1], [ 0.5, 0], [0, 0.5], [1, 0.5]]
-      });
+      }
+      this.graph.add('node', model);
       this.delegateShape.remove()
       this.delegateShape = undefined
       this.graph.set('addNode', undefined)
       this.graph.paint()
+      anchor.drawAnchor(model)
     }
   },
-  cancelAdd() {
+  onMouseleave() {
     const node = this.graph.get('addNode')
     if (this.delegateShape && node) {
       this.delegateShape.remove()
@@ -78,6 +89,15 @@ G6.registerBehavior('drag-node-to-editor', {
       const { width, height } = node
       this.delegateShape.attr({ x: x - width / 2, y: y - height / 2 });
       this.graph.paint();
+    }
+  },
+  onClearAnchor(ev) {
+    anchor.clearAnchor(ev.item.get('model'))
+  },
+  onUpdateAnchor(ev) {
+    const model = ev.item.get('model')
+    if (model.isShowAnchor) {
+      anchor.updateAnchor(model)
     }
   },
 })

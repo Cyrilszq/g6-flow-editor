@@ -34,20 +34,9 @@ class Editor {
     this.bindEvent()
   }
 
+  // 暂时简单实现
+  // 考虑将事件全部抽象成 behavior
   private bindEvent(): void {
-    // 添加节点时额外为节点画锚点
-    graph.on('aftereadditem' /** 此处G6接口名称存在拼写错误，已提交PR */, (ev) => {
-      ev.model.isAnchorShow && this.anchor.drawAnchor(ev.model)
-    })
-
-    graph.on('beforeremoveitem', (ev) => {
-      this.anchor.clearAnchor(ev.item.get('model'))
-    })
-
-    // 在节点拖动结束时更新锚点位置
-    graph.on('node:dragend', (ev) => {
-      this.anchor.updateAnchor(ev.item.get('model'))
-    })
     // 点击时选中，再点击时取消
     graph.on('edge:click', (ev) => {
       const edge = ev.item;
