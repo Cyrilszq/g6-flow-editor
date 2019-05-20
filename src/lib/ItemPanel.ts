@@ -1,20 +1,31 @@
 import { getGraph } from "./Editor";
 
+export type ItemType = {
+  type: string,
+  width: number,
+  height: number,
+  label: string,
+  shape: string,
+}
+
 class ItemPanel {
-  _cfg: any;
+  private cfg: {
+    container: string,
+    items: ItemType[]
+  };
   constructor(cfg) {
-    this._cfg = cfg
+    this.cfg = cfg
     this.bindEvent()
   }
 
-  bindEvent() {
-    const { items, container } = this._cfg
+  private bindEvent(): void {
+    const { items, container } = this.cfg
     const graph = getGraph()
-    const containerEle = document.querySelector(`#${container}`)!
-    containerEle.addEventListener('mousedown', (e) => {
-      const target = e.target as Element
+    const containerElement = document.querySelector(`#${container}`)!
+    containerElement.addEventListener('mousedown', (e) => {
+      const target = <Element>e.target
       const type = target.getAttribute('data-type')
-      graph.set('addNode', items.find(item => item.type === type))
+      graph.emit('flow:addnode', items.find(item => item.type === type))
     })
   }
 }

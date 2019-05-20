@@ -2,9 +2,10 @@
  * @Description: 
  * @Author: zhaoqing
  * @Date: 2019-05-16 19:16:49
- * @LastEditTime: 2019-05-17 00:03:23
+ * @LastEditTime: 2019-05-20 22:11:32
  */
 import { getGraph } from "./Editor";
+import { defaultAnchorStyle, hoverAnchorStyle } from "./global";
 
 class Anchor {
   anchors: any[];
@@ -12,24 +13,7 @@ class Anchor {
     this.anchors = []
   }
 
-  updateAnchor(model) {
-    const needRemoveShape = this.anchors.filter(anchor => anchor.get('id') === model.id)
-    needRemoveShape.forEach(shape => shape.remove())
-    this.anchors = this.anchors.filter(anchor => anchor.get('id') !== model.id)
-    this.drawAnchor(model)
-  }
-
-  clearAnchor(model) {
-    const { id } = model
-    const graph = getGraph()
-    this.anchors
-      .filter(anchor => anchor.get('id') === id)
-      .forEach(shape => shape.remove())
-    graph.paint()
-    this.anchors = this.anchors.filter(anchor => anchor.get('id') !== id)
-  }
-
-  drawAnchor(model){
+  public drawAnchor(model): void {
     const graph = getGraph()
     const { id, anchorPoints, x, y, height, width } = model
     const parent = graph.get('group');
@@ -43,38 +27,54 @@ class Anchor {
         id: id,
         index,
         attrs: {
-          symbol: 'circle',
-          radius: 3.5,
-          fill: '#fff',
-          stroke: '#1890FF',
-          lineAppendWidth: 12,
+          ...defaultAnchorStyle,
           x: anchorPointX,
           y: anchorPointY,
         },
       });
-      anchor.on('mousedown', (ev) => {
-        graph.emit('anchor:mousedown', ev)
-      })
-      anchor.on('mouseenter', (ev) => {
-        anchor.attr({
-          radius: 4,
-          fill: '#1890FF',
-          stroke: '#1890FF'
-        })
-        graph.paint()
-        graph.emit('anchor:mouseenter', ev)
-      })
-      anchor.on('mouseleave', (ev) => {
-        anchor.attr({
-          radius: 3.5,
-          fill: '#fff',
-        })
-        graph.paint()
-        graph.emit('anchor:mouseleave', ev)
-      })
+      this.bindEvent(anchor)
       this.anchors.push(anchor)
     })
     graph.paint()
+  }
+
+  private bindEvent(anchor): void {
+    const graph = getGraph()
+    anchor.on('mousedown', (ev) => {
+      graph.emit('anchor:mousedown', ev)
+    })
+    anchor.on('mouseenter', (ev) => {
+      anchor.attr({
+        ...hoverAnchorStyle,
+      })
+      graph.paint()
+      graph.emit('anchor:mouseenter', ev)
+    })
+    anchor.on('mouseleave', (ev) => {
+      anchor.attr({
+        radius: 3.5,
+        fill: '#fff',
+      })
+      graph.paint()
+      graph.emit('anchor:mouseleave', ev)
+    })
+  }
+
+  // 更新锚点，简单粗暴直接删掉原来的锚点，重新画
+  public updateAnchor(model): void {
+    const needRemoveShape = this.anchors.filter(anchor => anchor.get('id') === model.id)
+    needRemoveShape.forEach(shape => shape.remove())
+    this.anchors = this.anchors.filter(anchor => anchor.get('id') !== model.id)
+    this.drawAnchor(model)
+  }
+
+  public clearAnchorById(id: string) {
+    const graph = getGraph()
+    this.anchors
+      .filter(anchor => anchor.get('id') === id)
+      .forEach(shape => shape.remove())
+    graph.paint()
+    this.anchors = this.anchors.filter(anchor => anchor.get('id') !== id)
   }
 }
 
