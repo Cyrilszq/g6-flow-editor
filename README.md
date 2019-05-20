@@ -7,3 +7,10 @@
 npm install
 npm run start
 ```
+
+### TODO LIST
+
+- [ ] 优化边的各种行为，保持和G6-Editor一致
+- [ ] 如何保持锚点可控
+- [ ] 支持快捷键
+- [ ] 支持grid
