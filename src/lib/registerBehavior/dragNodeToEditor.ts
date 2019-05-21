@@ -1,6 +1,5 @@
 import G6 from '@antv/g6'
 import uuid from 'uuid'
-import { ItemType } from '../ItemPanel';
 
 // 定义拖动节点到画布
 G6.registerBehavior('drag-node-to-editor', {
@@ -39,7 +38,7 @@ G6.registerBehavior('drag-node-to-editor', {
     };
   },
   // 开始添加
-  startAddNode(node: ItemType) {
+  startAddNode(node) {
     this.addingNode = node
   },
   onMouseenter(ev) {

@@ -1,7 +1,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-import Editor, { getGraph } from './lib/Editor';
-import ItemPanel from './lib/ItemPanel';
+import G6 from '@antv/g6'
+import './lib'
 import './CustomNode'
 import './index.css';
 
@@ -11,34 +11,86 @@ class App extends React.Component {
   state = {
     data: {}
   }
+
   componentDidMount() {
-    new Editor({
+    this.initGraph()
+    this.initItemPanel()
+    this.bindEvent()
+  }
+
+  private initGraph(): void {
+    const container = document.querySelector('#flow')!
+    const { width, height } = container.getBoundingClientRect()
+    this.graph = new G6.Graph({
       container: 'flow',
+      width,
+      height,
+      modes: {
+        default: [
+          'zoom-canvas',
+          {
+            type: 'drag-node',
+            shouldBegin(ev) {
+              if (ev.target.get('name') === 'anchor') return false
+              return true
+            },
+          },
+          'click-select',
+          'drag-node-to-editor',
+          'drag-connect-node',
+          'click-select-edge',
+          // 'auto-add-anchor',
+        ]
+      },
     })
-    new ItemPanel({
-      container: 'item-panel',
-      items: [
-        {
-          type: 'circle',
-          width: 200,
-          height: 100,
-          label: '请编辑节点内容',
-          shape: 'testKeyShape',
-        },
-        {
-          type: 'rect',
-          width: 200,
-          height: 96,
-          label: '矩形',
-          shape: 'rect'
-        },
-      ]
+  }
+
+  private initItemPanel(): void {
+    const items = [
+      {
+        type: 'circle',
+        width: 200,
+        height: 100,
+        label: '请编辑节点内容',
+        shape: 'testKeyShape',
+      },
+      {
+        type: 'rect',
+        width: 290,
+        height: 132,
+        label: '矩形',
+        shape: 'test2KeyShape',
+      },
+    ]
+    const container = document.querySelector('#item-panel')!
+    container.addEventListener('mousedown', (e) => {
+      const target = e.target as Element
+      const type = target.getAttribute('data-type')
+      this.graph.emit('flow:addnode', items.find(item => item.type === type))
     })
-    this.graph = getGraph()
+  }
+
+  private bindEvent(): void {
+    window.addEventListener('keyup', (ev) => {
+      // 删除
+      if (ev.keyCode === 8) {
+        this.graph.setAutoPaint(false)
+        this.graph.findAllByState('node', 'selected').forEach((item) => {
+          this.graph.remove(item)
+        })
+        this.graph.findAllByState('edge', 'selected').forEach((item) => {
+          this.graph.remove(item)
+        })
+        this.graph.paint()
+        this.graph.setAutoPaint(true)
+      }
+    })
   }
 
   handleSave = () => {
-    this.setState({ data: this.graph.save() })
+    const data = this.graph.save()
+		console.log("TCL: App -> handleSave -> data", data)
+    this.setState({ data })
   }
 
   render() {
