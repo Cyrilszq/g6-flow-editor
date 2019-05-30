@@ -10,7 +10,6 @@
 
 # production
 /build
-/src/CustomNode.ts
 
 # misc
 .DS_Store

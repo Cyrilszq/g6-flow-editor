@@ -18,6 +18,16 @@ G6.registerBehavior('drag-connect-node', {
         lineAppendWidth: 8,
         endArrow: true
       },
+      shouldBegin(anchor, graph) {
+        const { type } = anchor.get('anchorCfg')
+        const { edges = [] } = graph.save()
+        // 鼠标移动到 type 为 out 的锚点 && 该锚点没有连接过 才可以开始连线
+        return type === 'out' && !edges.find((item) => item.source === anchor.get('id') && item.sourceAnchor === anchor.get('index'))
+      },
+      shouldEnd(anchor) {
+        const { type } = anchor.get('anchorCfg')
+        return type === 'in'
+      }
     }
   },
   getEvents() {
@@ -33,18 +43,18 @@ G6.registerBehavior('drag-connect-node', {
     const anchor = ev.target
     if (anchor.get('name') !== 'anchor') return
     if (this.selectedAchor && this.addingEdge) {
-      const id = anchor.get('id')
-      this.targetId = id
-    } else {
-      this.setAchorActive(anchor)
-      this.targetId = false
+      this.targetAnchor = anchor
+    } else if (this.shouldBegin(anchor, this.graph)) {
+      this.setAchorHover(anchor)
+      this.targetAnchor = null
     }
   },
   // 鼠标按下
   handleStartAddEdge(ev) {
     const anchor = ev.target
     if (anchor.get('name') !== 'anchor') return
-    if (!this.selectedAchor) {
+    if (!this.selectedAchor && this.shouldBegin(anchor, this.graph)) {
+      this.graph.removeBehaviors('click-select-edge', 'default');
       this.addingEdge = this.graph.addItem('edge', {
         shape: 'flow-cubic-vertical',
         style: this.delegateEdgeStyle,
@@ -53,6 +63,7 @@ G6.registerBehavior('drag-connect-node', {
         target: { x: anchor.get('x'), y: anchor.get('y') },
       })
       this.selectedAchor = anchor
+      this.setAchorActive()
     }
   },
   // 移动鼠标，跟着画线
@@ -72,16 +83,16 @@ G6.registerBehavior('drag-connect-node', {
     if (!this.selectedAchor) {
       this.resetAchor(anchor)
     }
-    this.targetId = false
+    this.targetAnchor = null
   },
   // 抬起鼠标，结束绘制，如果在锚点则进行连线
   handleStopAddEdge(ev) {
     if (!this.selectedAchor) return
     this.resetAchor(this.selectedAchor)
-    if (this.targetId) {
+    if (this.targetAnchor && this.shouldEnd(this.targetAnchor)) {
       this.graph.updateItem(this.addingEdge, {
         style: this.edgeStyle,
-        target: this.targetId,
+        target: this.targetAnchor.get('id'),
         targetAnchor: ev.target.get('index'),
       })
     } else {
@@ -90,7 +101,8 @@ G6.registerBehavior('drag-connect-node', {
     this.selectedAchor = null
     this.addingEdge = null
   },
-  setAchorActive(anchor) {
+  // 锚点hover样式
+  setAchorHover(anchor) {
     anchor.attr({
       radius: 4,
       fill: '#1890FF',
@@ -98,10 +110,15 @@ G6.registerBehavior('drag-connect-node', {
     })
     this.graph.paint()
   },
+  // 锚点可被链接样式
+  setAchorActive() {
+  },
+  // 锚点样式重置
   resetAchor(anchor) {
     anchor.attr({
       radius: 3.5,
       fill: '#fff',
+      fillOpacity: 1,
     })
     this.graph.paint()
   },

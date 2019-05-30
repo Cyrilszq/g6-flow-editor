@@ -1,4 +1,5 @@
 import G6 from '@antv/g6'
+import uuid from 'uuid'
 import { defaultAnchorStyle } from '../global';
 
 // 继承 node，新增画锚点

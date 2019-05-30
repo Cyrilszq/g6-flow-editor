@@ -94,13 +94,4 @@ G6.registerBehavior('drag-node-to-editor', {
       this.graph.paint()
     }
   },
-  // onClearAnchor(ev) {
-  //   anchor.clearAnchorById(ev.item.get('model').id)
-  // },
-  // onUpdateAnchor(ev) {
-  //   const model = ev.item.get('model')
-  //   if (model.isShowAnchor) {
-  //     anchor.updateAnchor(model)
-  //   }
-  // },
 })

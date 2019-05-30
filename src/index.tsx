@@ -2,7 +2,8 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import G6 from '@antv/g6'
 import './lib'
-import './CustomNode'
+import './components/RegisterJumpNode'
+import './components/RegisterNormalNode'
 import './index.css';
 
 
@@ -37,9 +38,10 @@ class App extends React.Component {
           },
           'click-select',
           'drag-node-to-editor',
-          'drag-connect-node',
+          {
+            type: 'drag-connect-node',
+          },
           'click-select-edge',
-          // 'auto-add-anchor',
         ]
       },
     })
@@ -52,14 +54,14 @@ class App extends React.Component {
         width: 200,
         height: 100,
         label: '请编辑节点内容',
-        shape: 'testKeyShape',
+        shape: 'jump-node',
       },
       {
         type: 'rect',
         width: 290,
         height: 132,
         label: '矩形',
-        shape: 'test2KeyShape',
+        shape: 'normal-node',
       },
     ]
     const container = document.querySelector('#item-panel')!
@@ -113,8 +115,6 @@ class App extends React.Component {
     )
   }
 }
-
-
 
 ReactDOM.render(<App />, document.getElementById('root'));
 
