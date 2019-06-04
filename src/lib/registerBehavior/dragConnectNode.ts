@@ -54,7 +54,6 @@ G6.registerBehavior('drag-connect-node', {
     const anchor = ev.target
     if (anchor.get('name') !== 'anchor') return
     if (!this.selectedAchor && this.shouldBegin(anchor, this.graph)) {
-      this.graph.removeBehaviors('click-select-edge', 'default');
       this.addingEdge = this.graph.addItem('edge', {
         shape: 'flow-cubic-vertical',
         style: this.delegateEdgeStyle,

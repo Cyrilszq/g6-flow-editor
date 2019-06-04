@@ -45,6 +45,9 @@ class App extends React.Component {
         ]
       },
     })
+    this.graph.on('canvas:mousemove', (ev) => {
+      ev.event.target.style.cursor = 'pointer'
+    })
   }
 
   private initItemPanel(): void {
